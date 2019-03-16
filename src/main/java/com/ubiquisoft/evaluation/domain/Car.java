@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -30,18 +31,65 @@ public class Car {
 		 *          "TIRE": 3
 		 *      }
 		 */
+		// Count parts present in the car by type.
+		HashMap<PartType, Integer> presentPartsMap = new HashMap<>() ;
 
-		return null;
+		if( null != this.parts )
+		{
+			for( Part part: this.parts )
+			{
+				PartType	partType    = part.getType() ;
+				Integer		nbParts		= presentPartsMap.get( partType ) ;
+
+				if( null == nbParts )
+				{
+					nbParts = 0 ;
+				}
+
+				presentPartsMap.put( partType, nbParts + 1 ) ;
+			}
+		}
+
+		HashMap<PartType, Integer> missingPartsMap = new HashMap<>() ;
+
+		// For each part type, verify that the car has the correct number of them.
+		for( PartType partType: PartType.values() )
+		{
+			Integer nbParts = presentPartsMap.get( partType ) ;
+
+			if( null == nbParts )
+			{
+				nbParts = 0 ;
+			}
+
+			int wantedNbParts = PartType.TIRE == partType ? 4 : 1 ;
+
+			if( nbParts < wantedNbParts )
+			{
+				missingPartsMap.put( partType, nbParts ) ;
+			}
+			else if( nbParts > wantedNbParts )
+			{
+				// Car not well initialized, note that there are no "missing" parts of that
+				// type if they are in excess, so the nethod contract is actually fullfilled.
+				System.err.println( String.format( "Too many parts of type '%s' specified for '%s': %d."
+												 , partType
+												 , this
+												 , nbParts ) ) ;
+			}
+		}
+
+		return missingPartsMap ;
 	}
 
 	@Override
 	public String toString() {
 		return "Car{" +
-				       "year='" + year + '\'' +
-				       ", make='" + make + '\'' +
-				       ", model='" + model + '\'' +
-				       ", parts=" + parts +
-				       '}';
+				"year='" + year + '\'' +
+				", make='" + make + '\'' +
+				", model='" + model + '\'' +
+				", parts=" + parts +
+				'}';
 	}
 
 	/* --------------------------------------------------------------------------------------------------------------- */
