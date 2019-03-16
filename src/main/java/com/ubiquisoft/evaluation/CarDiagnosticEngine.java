@@ -9,6 +9,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Objects;
 
 public class CarDiagnosticEngine {
 
@@ -38,8 +40,65 @@ public class CarDiagnosticEngine {
 		 * Treat the console as information being read by a user of this application. Attempts should be made to ensure
 		 * console output is as least as informative as the provided methods.
 		 */
+		// Diagnostic 1
+		String	make	= Objects.requireNonNull( car, "Null argument." ).getMake() ;
+		String	model	= car.getModel() ;
+		String	year	= car.getYear() ;
+		String 	errMsg	= "" ;
 
+		if( null == make || make.trim().isEmpty() )
+		{
+			errMsg += "make " ;
+		}
 
+		if( null == model || model.trim().isEmpty() )
+		{
+			errMsg += "model " ;
+		}
+
+		if( null == year || year.trim().isEmpty() )
+		{
+			errMsg += "year " ;
+		}
+
+		if( !errMsg.isEmpty() )
+		{
+			System.out.println( String.format( "Missing car information: %s.", errMsg ) ) ;
+		}
+		else
+		{
+			System.out.println( String.format( "Results diagnostic tests for: %s.", car ) ) ;
+
+			// Diagnostic 2
+			Map<PartType, Integer> missingPartsMap = car.getMissingPartsMap() ;
+
+			for( Map.Entry<PartType, Integer> entry: missingPartsMap.entrySet() )
+			{
+				printMissingPart( entry.getKey(), entry.getValue() ) ;
+			}
+
+			if( missingPartsMap.isEmpty() )
+			{
+				// Diagnostic 3
+				// Note: getParts() cannot return null here, as no missing parts were found.
+				int numDamagedParts = 0 ;
+
+				for( Part part: car.getParts() )
+				{
+					if( !part.isInWorkingCondition() )
+					{
+						printDamagedPart( part.getType(), part.getCondition() ) ;
+						numDamagedParts++ ;
+					}
+				}
+
+				if( 0 == numDamagedParts )
+				{
+					// Validation success.
+					System.out.println( String.format( "All diagnotic tests successfully passed for: %s.", car ) ) ;
+				}
+			}
+		}
 	}
 
 	private void printMissingPart(PartType partType, Integer count) {
